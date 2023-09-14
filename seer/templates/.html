@@ -1,0 +1,36 @@
+{% include "standard.html" %}
+
+<div class="result_info">
+	Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong>
+	<div class="pager">
+		<a href="/seer/query?q={{q}}&start={{j}}&choice={{choice}}">Next 10 →</a>
+	</div>
+</div>
+
+{% for hit in results %}
+{% autoescape off %}
+<div class="result">
+	<h3>
+		<div class="url">
+			<a href="{{hit.url}}">{{hit.title}}</a>
+		</div>
+	</h3>
+	<div> <a href="{{hit.url}}">{{hit.url}}</a></div>
+	<div class="description">
+		<p>{{ hit.description }}</p>
+	</div>
+</div>
+{% endautoescape%}
+{% endfor%}
+
+
+<div class="result_info">
+	Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong>
+	<div class="pager">
+		<a href="/seer/query?q={{q}}&start={{j}}&choice={{choice}}">Next 10 →</a>
+	</div>
+</div>
+
+</div>
+</body>
+</html>

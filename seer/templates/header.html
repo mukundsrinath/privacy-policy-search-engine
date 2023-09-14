@@ -1,0 +1,47 @@
+{% load privacy %}
+{% load sekizai_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+{% load static %}
+{% render_privacy_api %}
+<link type="text/css" rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!--<link rel="icon" type="image/png" href="https://privaseer.ist.psu.edu/static/privaseer-logo-blue-lock.png">-->
+{% render_block 'css' %}
+		<!-- Google Analytics -->
+		<script>
+                if (!django_privacy_mgmt.getPreference('STATISTICS')) {
+                    window['ga-disable-UA-165038230-1'] = true;
+		}
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-165038230-1', 'auto');
+		ga('send', 'pageview');
+		</script>
+		<!-- End Google Analytics -->
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<style>
+	.image-space{
+		padding-top: 20px;
+		padding-left: 20px;
+		padding-bottom: 20px;
+	}
+        .display-4{
+		padding-bottom: 20px;
+	}
+</style>
+</head>
+<body>
+        {% render_privacy_banner %}
+        {% render_block "js" %}
+	<div class="col-sm-2 image-space">  
+        <a href="/"><img class="img-fluid header-image" src='{% static "privaseer-logo-blue.jpg" %}'></a>
+	</div>
+
+	

@@ -1,0 +1,61 @@
+{% load static %}
+<style>
+#footer {
+    background: #1e407c;
+    width: 100%;
+    bottom: 0px;
+    overflow: auto;
+    position: sticky;
+    height: 7%;
+}
+
+body {
+	padding: 0px;
+	margin: 0px;
+}
+
+.footer-columns{
+	display: inline-block;
+}
+
+.links{
+	padding-right: 50px;
+	font-size: 16px;
+}
+
+.links a{
+	color: white;
+}
+
+.footer-image{
+	width: 12pc;
+	padding-top: 8px;
+	padding-left: 25px;
+        padding-bottom: 6px;
+}
+
+.footer-links{
+	text-align: right;
+}
+
+.footer-holder {
+    bottom: 0px;
+    width: 100%;
+    position: absolute;
+}
+
+</style>
+<footer id="footer">
+    <div class="col-sm-5 footer-columns">  
+        <img class="img-fluid footer-image" src='{% static "ist.png" %}'>
+    </div>
+    <div class="col-sm-6 footer-columns footer-links">
+		<span class="links"><a href="/about">About</a></span>
+		<span class="links"><a href="/people">People</a></span>
+                <span class="links"><a href="/data">Data & Code</a></span>
+		<span class="links"><a href="/contact-us">Contact Us</a></span>
+                <span class="links"><a href="/privacy-policy">Privacy Policy</a></span>
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,358 @@
+{% include "standard.html" %}
+
+
+<script type="text/javascript">
+   function onChangeFilterFacet(oEvent, filterFacetName) {
+        console.log(filterFacetName);
+	var urlParams = new URLSearchParams(window.location.search);;
+	var checked = oEvent.checked;
+	var filtername = oEvent.name;
+        filtername = filterFacetName === 'industry' ? filtername.charAt(0).toLowerCase() + filtername.substring(1) : filtername;
+        console.log(filtername);
+	if (urlParams.getAll(filterFacetName) === []) {
+	    urlParams.append(filterFacetName, filtername);
+            window.location.search = urlParams.toString();
+	} else {
+	    if (checked == true) {
+                urlParams.append(filterFacetName, filtername)
+		window.location.search = urlParams.toString();
+	    } else {
+                if (filterFacetName === 'industry') {
+                    if (filtername != 'nan') { document.getElementById(filtername.charAt(0).toUpperCase() + filtername.substring(1)).style.display = "none";}
+                }
+		var i, oldUrlParams = urlParams.getAll(filterFacetName);
+		index = oldUrlParams.indexOf(filtername);
+		if (index > -1) {
+		    oldUrlParams.splice(index, 1);
+		}
+		var newUrlParams = oldUrlParams;
+		urlParams.delete(filterFacetName);
+		for (i = 0; i < newUrlParams.length; i++) {
+		    urlParams.append(filterFacetName, newUrlParams[i])
+		}
+		window.location.search = urlParams.toString();
+	    }
+	}
+   }
+   function onClickOfNext(e, start) {
+      e.preventDefault();
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('start') == null) {
+	  urlParams.append('start', start)
+      } else {
+	  urlParams.set('start', start)
+      }
+      window.location.search = urlParams.toString();
+   }
+   function onClickSortBy(e, field) {
+      e.preventDefault();
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('sortby') == null) {
+          urlParams.append('sortby', field);
+      } else {
+          urlParams.set('sortby', field);
+      }
+      window.location.search = urlParams.toString();
+   }
+   function onFilterSubmit(e) {
+      var greater = document.getElementsByName('read_gte')[0].value == "" ? 0 : document.getElementsByName('read_gte')[0].value;
+      var lesser = document.getElementsByName('read_lte')[0].value == "" ? 18 : document.getElementsByName('read_lte')[0].value;
+      var vague_gte = document.getElementsByName('vague_gte')[0].value == "" ? 0 : document.getElementsByName('vague_gte')[0].value;
+      var vague_lte = document.getElementsByName('vague_lte')[0].value == "" ? 0 : document.getElementsByName('vague_lte')[0].value;
+      var urlParams = new URLSearchParams(window.location.search);
+      rangeFilters = [['read_gte', greater], ['read_lte', lesser], ['vague_gte', vague_gte], ['vague_lte', vague_lte]];
+      rangeFilters.forEach(function(rangeFilter) {
+          if (urlParams.get(rangeFilter[0]) === null) {
+	      urlParams.append(rangeFilter[0], rangeFilter[1])
+          } else {
+	      urlParams.set(rangeFilter[0], rangeFilter[1])
+          } 
+      });
+      window.location.search = urlParams.toString();   
+   }
+
+
+</script>
+
+<style>
+    .all-results{
+        padding-left: 15px;
+    }
+	
+	.result-heading{
+		margin-bottom: 3px;
+	}
+	
+	.result-para{
+		margin-top: 8px;
+		font-size: 13px;
+	}
+	
+	.result_info {
+		margin-top: 10px;
+		margin-bottom: 30px;
+	}
+	
+	.result a{
+		text-decoration: none;
+	}
+	
+	.url-display{
+		margin-bottom: 5px;
+	}
+	
+	.result{
+		padding-bottom: 15px;
+	}
+        .panel-size {
+            max-height: 300px;
+            height: auto;
+            overflow: auto;	
+	}
+        .checkboxLabel {
+            display: block;
+            padding-left: 15px;
+            text-indent: -15px;
+            margin-bottom: 0px;
+	}
+	.checkboxInput {
+	    width: 13px;
+	    height: 13px;
+            padding: 0;
+	    margin:0;
+	    vertical-align: text-bottom;
+	    position: relative;
+            top: -1px;
+	    *overflow: hidden;			
+	}
+
+	input.checkboxinput {
+    		margin-right: 5px;
+	}
+
+.date-display {
+    font-weight: bold;
+    border-style: ridge;
+    display: inline;
+    padding: 2px;
+}
+
+.progress {
+    text-align:center;
+    width:100%;
+    margin-bottom: 2.5px; margin-top: 2.5px; height: 10px;
+}
+.progress-value {
+    position:absolute;
+    right:0;
+    left:0;
+}
+.row:before, .row:after {display: none !important;}
+       
+	
+</style>
+<div class="bg-light">
+<div class="container">
+<div class="row">
+<div class="col-md-3">
+    <div class="panel panel-default" style="margin-top: 80px;">
+	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>Industry</b></div>
+	    <div class="panel-body  panel-size" style="padding: 6px;">
+		  {% for item in industry_buckets %}
+		      {% autoescape off %}
+			  <form method="post">
+			      <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="{{item.key}}" value="" onchange="onChangeFilterFacet(this, 'industry');"/>
+				{% if item.key == "Nan" %}
+                                Unknown ({{item.count}})
+                                {% else %}
+                                {{item.key}} ({{item.count}})
+                                {% endif %}
+                                <div class="form-row">
+                                <div class="col-9">
+                                <div class="progress" style="margin-bottom: 2.5px; margin-top: 2.5px; height: 10px;">
+                                   <div class="progress-bar" role="progressbar"
+                                       aria-valuenow="{{item.percentage}}" aria-valuemin="0" aria-valuemax="100" style="width:{{item.percentage}}%; min-width: 0.5em;">
+                                    
+                                   </div>
+                                </div>
+                                </div>
+                                <div class="col-3" style="font-size: 12px;">
+				   <div class="pull-right">{{item.percentage}}%</div>
+                                </div>
+                                </div>
+                                {% if item.key != "Nan" %}
+                                <ul id="{{item.key}}" style="display: none;">
+                                    {% for i in item.sub %}
+                                    <li style="font-size: 12px;">{{i.key}} ({{i.count}})</li>
+                                    {% endfor%}
+                                </ul>
+                                {% endif %}
+                              </label>
+			  </form>					
+		      {% endautoescape%}
+		   {% endfor%}	
+	    </div>
+    </div>
+    <div class="panel panel-default" style="margin-top: 20px;">
+	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>Tracking Technology</b></div>
+	    <div class="panel-body  panel-size" style="padding: 8px;">
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="thirdparties" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Third Parties </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="cookies" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Cookies </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="logs" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Logs </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="webbeacon" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Web Beacon </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="fingerprints" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Fingerprinting </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="flash" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Flash Cookies </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="deviceid" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Device ID </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="adid" value="" onChange="onChangeFilterFacet(this,'tracktech');"/> Advertising ID </label>
+	          </form>					
+	    </div>
+    </div>
+
+    <div class="panel panel-default" style="margin-top: 20px;">
+	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>Self-Regulatory Bodies</b></div>
+	    <div class="panel-body  panel-size" style="padding: 8px;">
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="nia" value="" onChange="onChangeFilterFacet(this,'selfreg');"/> NAI </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="daa" value="" onChange="onChangeFilterFacet(this,'selfreg');"/> DAA </label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxLabel"><input class="checkboxInput" type="checkbox" name="edaa" value="" onChange="onChangeFilterFacet(this,'selfreg');"/> EDAA </label>
+	          </form>
+	    </div>
+    </div>
+
+
+
+    <div class="panel panel-default" style="margin-top: 20px;">
+	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>regulations & agreements</b></div>
+	    <div class="panel-body  panel-size" style="padding: 8px;">
+		  <form method="post">
+	             <label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="gdpr" value="" onchange="onChangeFilterFacet(this,'regagree');"/> GDPR</label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="coppa" value="" onchange="onChangeFilterFacet(this,'regagree');"/> COPPA</label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="privacyshield" value="" onchange="onChangeFilterFacet(this,'regagree');"/> Privacy Shield</label>
+	          </form>
+		  <form method="post">
+	             <label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="caloppa" value="" onchange="onChangeFilterFacet(this,'regagree');"/> CalOPPA</label>
+	          </form>
+	    </div>
+    </div>
+
+
+
+</div>
+<div class="col-md-7 all-results">
+<div class="result_info row">
+	<div class="col-sm-10">Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong></div>
+	<div class="col-sm-2 pager">
+		<a href="#" onclick="onClickOfNext(event,'{{ j }}')">Next 10 ?</a>
+	</div>
+</div>
+
+{% for hit in results %}
+{% autoescape off %}
+<div class="result">
+	<h5 class="result-heading">
+		<div class="url">
+			<a href="{{hit.url}}"><h3>{{hit.title}}</h3></a>
+		</div>
+	</h3>
+	<div class="url-display"> <a style="word-wrap: break-word;" href="{{hit.url}}">{{hit.url}}</a> | Industry: {{hit.industry}}</div>
+        <div class="date-display">{{hit.date}}</div>
+	<div class="description">
+		<p class="result-para">{{ hit.description }}</p>
+	</div>
+</div>
+{% endautoescape%}
+{% endfor%}
+
+
+<div class="result_info row">
+	<div class="col-sm-10">Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong></div>
+	<div class="col-sm-2 pager">
+		<a href="#" onclick="onClickOfNext(event,'{{ j }}')">Next 10 ?</a>
+	</div>
+</div>
+</div>
+
+<div class="col-md-2">
+<div class="card" style="margin-top: 100px; width: 20rem;">
+  <div class="card-body">
+    <label>Sort by:</label>
+  <div class="dropdown">
+    <button id="sortby" type="button" class="btn dropdown-toggle" data-toggle="dropdown" style="border-color: black;">
+      Custom Ranking
+    </button>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="#" onclick="onClickSortBy(event,'customrank');">Custom Ranking</a>
+	<a class="dropdown-item" href="#" onclick="onClickSortBy(event,'querysim');">Query Similarity</a>
+    	<a class="dropdown-item" href="#" onclick="onClickSortBy(event,'pagerank');">PageRank</a>
+    	<a class="dropdown-item" href="#" onclick="onClickSortBy(event,'readasc');">Readability (Ascending)</a>
+    	<a class="dropdown-item" href="#" onclick="onClickSortBy(event,'readdesc');">Readability (Descending)</a>    
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="panel panel-default" style="margin-top: 20px; width: 20rem;">
+	<div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>Crawl Dates</b></div>
+ 	<div class="panel-body  panel-size" style="padding: 8px;">
+		<form method="post">
+			<label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="j2019" value="" onchange="onChangeFilterFacet(this, 'crawldates');"/> July, 2019 </label>
+		</form>
+		<form method="post">
+			<label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="m2020" value="" onchange="onChangeFilterFacet(this,'crawldates');"/> March, 2020 </label>
+		</form>
+		<form method="post">
+			<label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="m2021" value="" onchange="onChangeFilterFacet(this,'crawldates');"/> March, 2021 </label>
+		</form>
+		<form method="post">
+			<label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="o2022" value="" onchange="onChangeFilterFacet(this, 'crawldates');"/> October, 2022 </label>
+		</form>
+	</div>
+</div>
+
+<div class="card" style="margin-top: 20px; width: 20rem;">
+  <div class="card-body">
+    <p class="card-title" style="font-size:2rem;font-weight:bold;">Filter</p>
+    <label>Flesch-Kincaid Reading Level (0 - 18):</label>
+    <div class="row" style="justify-content: center;margin-bottom: 1rem;">
+      <input type="number", name="read_gte", size="2" style="width: 40%;margin-right: 5%;"/>
+      <input type="number", name="read_lte", size="2" style="width: 40%;"/>
+    </div>
+    <label>Vagueness (0 - 1):</label>
+    <div class="row" style="justify-content: center;margin-bottom: 1rem;">
+      <input type="number", name="vague_gte", size="2" style="width: 40%;margin-right: 5%;"/>
+      <input type="number", name="vague_lte", size="2" style="width: 40%;"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="onFilterSubmit(this);">Submit</button>
+  </div>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+{% include "footer.html" %}
+

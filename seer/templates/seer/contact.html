@@ -1,0 +1,140 @@
+{% include "header.html" %}
+<title>
+    PrivaSeer - Contact Us
+</title>
+
+<style>
+	.contact_form {
+		margin-top: 10px;
+	}
+	
+	.ptext {
+		margin-bottom: 30px;
+		font-size: 16px;
+		font-family: 'Roboto', sans-serif;
+		color: #646464;
+		text-align: justify;
+		line-height: 25px;
+		padding-right: 20px;
+		padding-left: 20px;
+	}
+	
+	.first_name {
+		float: left;
+		padding-right: 10px;
+		width: 50%;
+	}
+	
+	label {
+		display: block;
+		padding-left: 15px;
+		text-indent: -15px;
+	}
+	
+	.name_input {
+		width: 100%;
+	}
+	
+	input {
+		width: inherit;
+		height: inherit;
+		padding: 0;
+		margin: 0;
+		vertical-align: bottom;
+		position: relative;
+		top: -1px;
+		overflow: hidden;
+		margin-bottom: 10px;
+	}
+	
+	.last_name {
+		float: left;
+		width: 50%;
+	}
+	
+	.long_text_box {
+		width: 100%;
+	}
+	
+	.required {
+		color: red;
+		font-size: 10px;
+		vertical-align: super;
+		margin-left: 3px;
+	}
+	
+	.spaces {
+		display: inline-block;
+		text-align: center;
+		
+	}
+	
+	textarea{
+		width: 100%;
+	}
+	
+	.display-4{
+		top: 35%;
+		position: relative;
+	}
+	
+	#error_info {
+		text-align: center;
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+</style>
+
+<!--
+<script>
+    document.getElementById("submit").disabled = true;
+    function enableBtn() {
+        document.getElementById("submit").disabled = false;
+    }
+    function disableBtn() {
+        document.getElementById("submit").disabled = true;
+    }
+</script>
+-->
+<div class="bg-light">
+<div class="container">
+	<!--{% if errormessage %}
+	<div id="error_info">
+	<div> {{ errormessage }} </div> 	
+	</div>
+	{% endif %}-->
+	<div class="row">
+	<div class="col-sm-6 spaces">
+		<h1 class="display-4">Contact Us</h1>
+	</div>
+	<div class="col-sm-6 contact_form">
+		<div class="ptext">
+			<p>For questions about collaboration, licensing, or other topics, contact <a href="https://shomir.net">Dr. Shomir Wilson</a> (Lead PI of the project) at shomir _at_ psu _dot_ edu.</p>
+			<!--
+			<form action="{% url 'store' %}" method="post">
+				{% csrf_token %}
+				<div class="first_name">
+					<label for="id_first_name">First Name<span class="required">*</span></label>
+					<input type="text" name="first_name" required="" id="id_first_name" class="name_input">
+				</div>
+				<div class="last_name">
+					<label for="id_last_name">Last Name<span class="required">*</span></label>
+					<input type="text" name="last_name" required="" id="id_last_name" class="name_input">
+				</div>
+				<label for="id_email">Email<span class="required">*</span></label>
+				<input type="email" name="email" required="" id="id_email" class="long_text_box">
+				<label for="id_subject">Subject<span class="required">*</span></label>
+					<input type="text" name="subject" maxlength="250" required="" id="id_subject" class="long_text_box">
+				<label for="id_content">Body<span class="required">*</span></label>
+					<textarea name="content" required="" id="id_content" rows="5"></textarea>
+				<div class="g-recaptcha" data-sitekey="6LfdVfIcAAAAAJO4-Elw6votdPJboCnTzHO0ddOZ" data-callback="enableBtn"></div>
+				<input type="submit" id="submit" class="submit-button" style="margin-top: 1rem;" disabled>
+			</form>
+			-->
+		</div>
+	</div>
+	</div>
+</div>
+</div>
+-->
+{% include "footer.html" %}

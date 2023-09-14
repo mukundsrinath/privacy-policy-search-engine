@@ -1,0 +1,68 @@
+{% load static sekizai_tags i18n %}
+
+{% addtoblock "css" %}
+    <link rel="stylesheet" type="text/css" href="{% static 'django_privacy_mgmt/css/main.css' %}" media="screen"/>
+{% endaddtoblock %}
+
+
+{% addtoblock "js" %}
+    <script>
+        // handles cookie bar settings
+        jQuery(document).ready(function () {
+
+            var COOKIE_NAME = 'django-privacy-mgmt-banner-state';
+            var cookie_banner_state = Cookies.getJSON(COOKIE_NAME) || {hidden: false};
+
+            if (!cookie_banner_state.hidden) {
+                $('.js-cookie-bar').show();
+                $('.js-cookie-bar').removeAttr('hidden');
+            }
+
+            // accepting
+            $('.js-cookie-accept').on('click', function (e) {
+                e.preventDefault();
+                window['ga-disable-UA-165038230-1'] = false;
+                django_privacy_mgmt.setPreference('STATISTICS', true);
+                closeBar();
+                location.reload(true);
+            });
+
+	   $('.js-opt-out').on('click', function(e) {
+               e.preventDefault();
+               window['ga-disable-UA-165038230-1'] = true;
+               django_privacy_mgmt.setPreference('STATISTICS', false);
+               closeBar();
+               location.reload(true);
+	   });
+
+            function closeBar() {
+                var date = new Date();
+                if (django_privacy_mgmt.getPreference('STATISTICS')) {
+                    date.setUTCFullYear(date.getUTCFullYear() + 2);
+		} else {
+		    date.setUTCFullYear(2099);
+                    date.setUTCMonth(11);
+                    date.setUTCDate(31);
+                    date.setUTCHours(23);
+                    date.setUTCMinutes(59);
+                    date.setUTCSeconds(59);
+                }
+                Cookies.set(COOKIE_NAME, {hidden: true}, {
+                    expires: date
+                });
+                $('.js-cookie-bar').hide();
+            }
+        });
+    </script>
+{% endaddtoblock %}
+
+<div class="cookie-bar js-cookie-bar" hidden style="padding: 3px; top: 0px; bottom: auto; top: 0;">
+    <div class="container">
+        {% blocktrans trimmed %}
+            <div style="font-size: 14px; display: inline; font-family: Arial, Helvetica, sans-serif;" class="text-center"><span>We use cookies to analyze our traffic. To find out more, read our 
+            <a href="/privacy-policy">Privacy Policy</a>. 
+            You may <a class="js-opt-out" href="#">opt out</a> if you do not consent to our use of cookies.</span>
+            <a href="#" class="btn btn-success btn-sm js-cookie-accept float-right" style="margin-top:0px;">Accept</a></div>            
+        {% endblocktrans %}
+    </div>
+</div>

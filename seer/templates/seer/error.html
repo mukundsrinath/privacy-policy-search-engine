@@ -1,0 +1,9 @@
+{% include "standard.html" %}
+<div>
+{% if errormessage %}
+	<div id="error_info">
+		<span> {{ errormessage }} </span> 	
+	</div>
+{% endif %}
+</div>
+{% include "footer.html" %}
