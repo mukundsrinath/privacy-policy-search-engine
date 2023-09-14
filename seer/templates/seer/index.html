@@ -6,6 +6,7 @@
 		{% load static %}
                 {% render_privacy_api %}
 		<link type="text/css" rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+		<link rel="shortcut icon" type="image/png" href='{% static "privaseerfavicon.png" %}'>
 		<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
                 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
                 {% render_block 'css' %}
@@ -31,8 +32,8 @@
 			}
 			
 			.error-message{
-				color:white;
-				font-size:20pt;
+				color: red;
+				text-align: center;
 			}
 			
 			.search{
@@ -118,6 +119,7 @@
                                 font-size: 12px;
 				color: #AAA;
 			}
+
                         .checkbox-align {
 			 {
                            vertical-align: middle;
@@ -132,6 +134,7 @@
                            display: block;
                            margin-left: 40px;
                         }
+
 
 			
 		</style>
@@ -171,7 +174,7 @@ End Google Tag Manager (noscript) -->
                 {% render_block "js" %}
 		{% if errormessage %}  
 			<div id="navwrapper">  
-				<span class="error-message"><br>{{ errormessage }}</br></span>
+				<div class="error-message"><br>{{ errormessage }}</br></span>
 			</div> 
 		{% endif %} 
 		<div align="center">

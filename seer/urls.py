@@ -16,5 +16,6 @@ urlpatterns = [
     path('publications', views.publications, name='publications'),
     path('news', views.news, name="news"),
     path('people', views.people, name="people"),
+    path('visualizations', views.visualizations, name="visualizations"),
     re_path(r'robots\.txt', views.robots, name='robots')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

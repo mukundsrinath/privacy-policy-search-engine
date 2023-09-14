@@ -1,6 +1,5 @@
 {% include "standard.html" %}
 
-
 <script type="text/javascript">
    function onChangeFilterFacet(oEvent, filterFacetName) {
         console.log(filterFacetName);
@@ -70,13 +69,22 @@
       });
       window.location.search = urlParams.toString();   
    }
-
+   function OnClickNewPage(e, hitClass){
+	e.preventDefault();
+	console.log(typeof hitClass);
+	hitClass = JSON.stringify(hitClass);
+	let newWindow = window.open('', '_blank');
+	let content = "<html><body><pre>" + hitClass + "</pre></body></html>";
+	newWindow.document.write(content);
+	newWindow.document.close();
+   }
 
 </script>
 
 <style>
     .all-results{
         padding-left: 15px;
+		padding-bottom: 30px;
     }
 	
 	.result-heading{
@@ -149,7 +157,60 @@
 }
 .row:before, .row:after {display: none !important;}
        
-	
+	.tooltip-container{
+		position: relative;
+		display: inline-block;
+		margin-left: 5px;
+	}
+	.tooltip-text{
+		position: absolute;
+		visibility: hidden;
+		color: white;
+		background-color: black;
+		border-radius: 10px;
+		border: solid;
+		padding: 10px;
+		opacity: 0;
+		width: 200px;
+		transition: opacity 0.5s ease;
+	}
+	.tooltip-text::before{
+		content: "";
+		position: absolute;
+		left: 50%;
+		top: 100%;
+		transform: translateX(-50%);
+		border: 15px solid;
+		border-color: #000 #0000 #0000 #0000;
+	}
+	.tooltip-container:hover .tooltip-text{
+		top: -650%;
+		left: -540%;
+		visibility: visible;
+		opacity: 1;
+	}
+	.tooltip-question-mark{
+		color: white;
+		background-color: black;
+		border-radius: 50%;
+		height: 17px;
+		width: 17px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 12px;
+		font-weight: 500;
+	}
+	#tooltip-1{
+		
+	}
+	.paginator{
+		padding-bottom: 50px;
+	}
+	.pagination-number{
+		margin-right: 10px;
+	}
+
 </style>
 <div class="bg-light">
 <div class="container">
@@ -241,7 +302,7 @@
 
 
     <div class="panel panel-default" style="margin-top: 20px;">
-	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>regulations & agreements</b></div>
+	    <div class="panel-heading" style="font-size: 14px;padding: 10px;"><b>Regulations & Agreements</b></div>
 	    <div class="panel-body  panel-size" style="padding: 8px;">
 		  <form method="post">
 	             <label class="checkboxlabel"><input class="checkboxinput" type="checkbox" name="gdpr" value="" onchange="onChangeFilterFacet(this,'regagree');"/> GDPR</label>
@@ -264,9 +325,6 @@
 <div class="col-md-7 all-results">
 <div class="result_info row">
 	<div class="col-sm-10">Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong></div>
-	<div class="col-sm-2 pager">
-		<a href="#" onclick="onClickOfNext(event,'{{ j }}')">Next 10 ?</a>
-	</div>
 </div>
 
 {% for hit in results %}
@@ -274,11 +332,11 @@
 <div class="result">
 	<h5 class="result-heading">
 		<div class="url">
-			<a href="{{hit.url}}"><h3>{{hit.title}}</h3></a>
+			<a href="" onclick="OnClickNewPage(event, '{{hit.content}}')" style="display: inline-block;"><h3>{{hit.title}}</h3></a>
+			<div class="date-display" style="display: inline-block;">{{hit.date}}</div>
 		</div>
 	</h3>
 	<div class="url-display"> <a style="word-wrap: break-word;" href="{{hit.url}}">{{hit.url}}</a> | Industry: {{hit.industry}}</div>
-        <div class="date-display">{{hit.date}}</div>
 	<div class="description">
 		<p class="result-para">{{ hit.description }}</p>
 	</div>
@@ -286,13 +344,40 @@
 {% endautoescape%}
 {% endfor%}
 
-
 <div class="result_info row">
 	<div class="col-sm-10">Results <strong>{{i}} - {{j}} </strong> of <strong>{{total}}</strong></div>
-	<div class="col-sm-2 pager">
-		<a href="#" onclick="onClickOfNext(event,'{{ j }}')">Next 10 ?</a>
-	</div>
 </div>
+
+{% if total <= 10 %}
+
+{% else %}
+	<div class="paginator">
+		{% if prev != 0 %}
+			<a href="#" class="pagination-number" onclick="onClickOfNext(event, 0)">|&lt;</a>
+			<a href="#" class="pagination-number" onclick="onClickOfNext(event, ({{i}}-11))">&lt;</a>
+		{% endif %}
+		<script>
+			var currentpage = ({{i}}+9);
+			for (var pagenumber = currentpage; pagenumber <= ({{total}}+10); pagenumber += 10) {
+				var number = (pagenumber/10);
+				for (var pageindex = -4; pageindex <= 4; pageindex++) {
+					if (number + pageindex > 0 && number + pageindex < (({{total}}-({{total}}&10))+10)/10) {
+						var link = "<a href='#' class='pagination-number' onclick='onClickOfNext(event, " + (((number+pageindex)*10)-10) + ")'>" + (number + pageindex) + "</a>";
+						if (number == number+pageindex){
+							var link = "<div style='display: inline' class='pagination-number'>" + (number + pageindex) + "</div>";
+						}
+						document.write(link + " ");
+					}
+				}
+				break;
+			}
+		</script>
+		{% if j != total %}
+			<a href="#" class="pagination-number" onclick="onClickOfNext(event, '{{j}}')">&gt;</a>
+			<a href="#" class="pagination-number" onclick="onClickOfNext(event, ({{total}}-({{total}}%10)))">&gt;|</a>
+		{% endif %}
+	</div>
+{% endif %}
 </div>
 
 <div class="col-md-2">
@@ -335,12 +420,22 @@
 <div class="card" style="margin-top: 20px; width: 20rem;">
   <div class="card-body">
     <p class="card-title" style="font-size:2rem;font-weight:bold;">Filter</p>
-    <label>Flesch-Kincaid Reading Level (0 - 18):</label>
+    <label>Flesch-Kincaid Reading Level (0 - 18):
+		<div class="tooltip-container">
+			<span class="tooltip-text">Quantitative assessment of a text's readability. A higher score indicates a more advanced reading level requirement.</span>
+			<label class="tooltip-question-mark">?</label>
+		</div>
+	</label>
     <div class="row" style="justify-content: center;margin-bottom: 1rem;">
       <input type="number", name="read_gte", size="2" style="width: 40%;margin-right: 5%;"/>
       <input type="number", name="read_lte", size="2" style="width: 40%;"/>
     </div>
-    <label>Vagueness (0 - 1):</label>
+	<label>Vagueness (0 - 1):
+		<div class="tooltip-container">
+			<span class="tooltip-text">Percentage of sentences with at least one vague word in them. Vague words list: (Bhatia et al., 2016)</span>
+			<label class="tooltip-question-mark">?</label>
+		</div>
+	</label>
     <div class="row" style="justify-content: center;margin-bottom: 1rem;">
       <input type="number", name="vague_gte", size="2" style="width: 40%;margin-right: 5%;"/>
       <input type="number", name="vague_lte", size="2" style="width: 40%;"/>

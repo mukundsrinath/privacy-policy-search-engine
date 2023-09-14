@@ -1,8 +1,13 @@
+import sys, os
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
 from django.core.mail import send_mail
 from elasticsearch import Elasticsearch
+#from . import create_visualizations
 import urllib
 import urllib.request
 from . import models
@@ -32,6 +37,10 @@ def people(request):
 
 def news(request):
     return render(request, 'seer/news.html')
+
+def visualizations(request):
+    create_visualizations.viz_creator()
+    return render(request, 'seer/visualizations.html')
 
 def robots(request):
     file = open('/data/privaseer/seer/templates/seer/robots.txt', 'r')
@@ -91,8 +100,8 @@ def pre_query(request):
             return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'}) 
         try:
             return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
-        except:
-            return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'})
+        except Exception as e:
+            return render(request, 'seer/index.html', {'errormessage': 'Unexpected error. Please try again: '+str(e)})
     else:
         start = int(request.GET.get('start', 0))
         c = request.GET.get('choice')
@@ -120,8 +129,8 @@ def pre_query(request):
         else:
             try:
                 return query(request, q, c, start, industry, gte, lte, vague_gte, vague_lte, sortby, tracktech, selfreg, regagree, crawldates)
-            except:
-                return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'})
+            except Exception as e:
+                return render(request, 'seer/index.html', {'errormessage': 'Unexpected error. Please try again '+str(e)})
 
 def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lte, sortby, tracktech, selfreg, regagree, crawldates):
     print(crawldates)
@@ -195,6 +204,8 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
     body['query']['function_score']['script_score']['script']['params']['a'] = 10
     body['query']['function_score']['script_score']['script']['params']['b'] = 5
     body['query']['function_score']['script_score']['script']['params']['c'] = 1000
+    #if sortby == "customrank":
+        #body['query']['function_score']['script_score']['script']['source'] = "_score * doc['proba'].value * Math.log10(doc['pagerank'].value)"
     if sortby == "querysim":
         body['query']['function_score']['script_score']['script']['source'] = "_score" ####for query similarity ranking
     elif sortby == "pagerank":
@@ -202,6 +213,23 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
     else: #change
         body['query']['function_score']['script_score']['script']['source'] = "_score * doc['probability'].value * Math.log10(doc['pagerank'].value)"
 
+    #if (not prank) and (not read_a) and (not read_d) and cos:
+    #    body['query']['function_score']['script_score']['script']['source'] = "_score"
+    #elif (not prank) and (not read_a) and (not read_d) and (not cos):
+    #    body['query']['function_score']['script_score']['script']['source'] = "_score * Math.log10(doc['pagerank'].value) + 10"
+    #elif (prank) and (not read_a) and (not read_d):
+    #    body['query']['function_score']['script_score']['script']['source'] = "Math.log10(doc['pagerank'].value)"
+    #elif (prank) and (not read_a) and (read_d):
+    #    body['query']['function_score']['script_score']['script']['source'] = "3*Math.log10(doc['pagerank'].value) + 0.1*doc['readability'].value + 10" 
+    #elif (prank) and (read_a) and (not read_d):
+    #    body['query']['function_score']['script_score']['script']['source'] = "2*Math.log10(doc['pagerank'].value + 10) + 5/doc['readability'].value + 1000"
+    #elif (not prank) and (not read_a) and (read_d):
+    #    body['query']['function_score']['script_score']['script']['source'] = "doc['readability'].value + 10"
+    #elif (not prank) and (read_a) and (not read_d): 
+    #    body['query']['function_score']['script_score']['script']['source'] = "1/(doc['readability'].value) + 10"
+    #if cos:
+    #    body['query']['function_score']['boost_mode'] = "multiply"
+    #else:
 
     body['query']['function_score']['boost_mode'] = "replace"
     if choice == 'title-text':
@@ -315,6 +343,11 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
                 f = models.SearchResult(resultid) #calling the object class that is defined inside models.py
 
                 f.content= result['_source']['text']
+                    
+                    
+                    # rawpath= result['_source']['file']['url']
+                    
+                    #removing local folder path
                 f.url= result['_source']['url']
                 f.title = result['_source']['title']
                 f.date = result['_source']['display_date']
@@ -328,10 +361,17 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
                     for desc in result['highlight']['text']:
                         f.description = f.description + desc + '\n'
 
+                #f.description = " ".join(f.description).encode("utf-8")
+                #    '''
+                #    if len(result.get('category',[])) > 0:
+                #       f.category=result['category'][0].encode("utf-8") 
+                #    '''
+                #trying to use the location field to get the file name to display the image
+                #f.filename= str(imageid)+'.png'
                 SearchResults.append(f)
                 
             return render(request, 'seer/htmlresult.html', {'results':SearchResults ,'industry_buckets': industry_hierarchy_list,'q': query,\
-                       'total':totalresultsNumFound, 'i':str(start+1) , 'j':str(len(results)+start), 'choice': choice})
+                       'total':totalresultsNumFound, 'i':str(start+1) , 'j':str(len(results)+start), 'choice': choice, 'prev':int(start)})
         else:
             return render(request, 'seer/error.html',{'errormessage':'Your search returned zero results, please try another query', 'q': query, 'choice':choice})
 

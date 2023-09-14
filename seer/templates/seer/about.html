@@ -1,7 +1,14 @@
+{% load static %}
 {% include "header.html" %}
 <title>
     PrivaSeer - About
 </title>
+
+<style>
+  .nsflogo{
+    transform: translateX(-1%)
+  }   
+</style>
 
 <div class="bg-light">
   <div class="container">
@@ -18,12 +25,11 @@
 			PrivaSeer currently has over 1.4 million privacy policies indexed and we are always looking to add more.
                         We crawled privacy policies based on URLs obtained from <a href="https://commoncrawl.org/">Common Crawl</a> and the <a href="https://docs.peopledatalabs.com/docs/free-company-dataset">Free Company Dataset</a>.
 		</p>
-		<p> 
-			If you have a feature request or just want to tell us that we're doing something right, write to us on our <a href="/contact-us">contact</a> page. 
-		</p>
 		<p>
 		        This research was supported in part by grants from the National Science Foundation's Secure and Trustworthy Computing program (CNS-2105745, CNS-2105734, CNS-2105736).
 		</p>
+    <p>For questions about collaboration, licensing, or other topics, contact <a href="https://shomir.net">Dr. Shomir Wilson</a> (Lead PI of the project) at shomir _at_ psu _dot_ edu.</p>
+    <div class="nsflogo"><img class="img-responsive nsffunding-logo" src='{% static "nsflogo.svg" %}'></div>
 	  </div>
     </div>
   </div>
