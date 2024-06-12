@@ -39,7 +39,7 @@ def news(request):
     return render(request, 'seer/news.html')
 
 def visualizations(request):
-    create_visualizations.viz_creator()
+    # create_visualizations.viz_creator()
     return render(request, 'seer/visualizations.html')
 
 def robots(request):
@@ -101,7 +101,7 @@ def pre_query(request):
         try:
             return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
         except Exception as e:
-            return render(request, 'seer/index.html', {'errormessage': 'Unexpected error. Please try again: '+str(e)})
+            return render(request, 'seer/index.html', {'errormessage': 'It\'s possible we\'re under heavy load, or our servers aren\'t functioning as they should.\n\nPlease try again!  '})
     else:
         start = int(request.GET.get('start', 0))
         c = request.GET.get('choice')
