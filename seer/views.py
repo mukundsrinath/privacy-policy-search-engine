@@ -7,12 +7,17 @@ from django.http import HttpResponse
 from django.template import loader
 from django.core.mail import send_mail
 from elasticsearch import Elasticsearch
-#from . import create_visualizations
+from django.shortcuts import get_object_or_404
 import urllib
 import urllib.request
 from . import models
 import time
 import json
+# from . import create_visualizations
+
+from django.shortcuts import redirect
+from django.urls import reverse
+
 
 def hello(request):
     return HttpResponse("Hello World")
@@ -35,12 +40,36 @@ def publications(request):
 def people(request):
     return render(request, 'seer/people.html')
 
+# def visualizations(request):
+#     #create_visualizations.viz_creator()
+#     # return render(request, 'seer/visualizations.html')
+#     # return redirect('visualization_app:plot_view')
+#     # return redirect('visualization_app:plot_view')
+#     return redirect('myapp:plot_view')
+
+def visualizations(request):
+    return redirect(reverse('myapp:plot_view'))
+
 def news(request):
     return render(request, 'seer/news.html')
 
-def visualizations(request):
-    # create_visualizations.viz_creator()
-    return render(request, 'seer/visualizations.html')
+def temporarycopy(request, hitid):
+    #print(models.SearchResult)
+    hit = get_object_or_404(models.SearchResult, pk=hitid)
+    return render(request, 'seer/temporarycopy.html', {"objectid":hitid, "content": hit.content})
+
+def open_html(request):
+    #print('herererererererer')
+    html_location = request.POST.get("html_location")
+    hash_value = request.POST.get("hash_value")
+    #print(html_location)
+    #print(hash_value)
+    html_file = open(html_location+hash_value+'.html', 'r', encoding="utf-8")
+    content = html_file.read()
+    #print(content)
+    html_file.close()
+    #return render(request, 'my_file.html', {'content': content})
+    return HttpResponse(content, content_type='text/html')
 
 def robots(request):
     file = open('/data/privaseer/seer/templates/seer/robots.txt', 'r')
@@ -67,17 +96,14 @@ def store(request):
         try:
             send_mail(contact['subject'], content, contact['email'], ['clg20@psu.edu','shomir@psu.edu','mus824@psu.edu'])
             return render(request, 'seer/contact.html', {'errormessage': 'Your response has been recorded. Thank you.'})
-        except Exception as e:
-            print(e)
-            print('Could not send mail')
+        except:
             return render(request, 'seer/contact.html', {'errormessage': 'An error occured. Please try again'})
         try:
             ts = time.time()
             with open('/data/privaseer/contacts/'+str(ts).replace('.', '_'), 'w+') as f:
                 f.write(json.dumps(contact))
             return render(request, 'seer/contact.html', {'errormessage': 'Your response has been recorded. Thank you.'})
-        except Exception as e:
-            print(e)
+        except:
             return render(request, 'seer/contact.html', {'errormessage': 'An error occured. Please try again'})
     else:
         return render(request, 'seer/contact.html', {'errormessage': 'Invalid reCAPTCHA. Please try again.'})
@@ -97,11 +123,12 @@ def pre_query(request):
         crawldates = request.GET.getlist('crawldates',[])
         start = 0
         if not q or q.strip() == '':
+            #print('not here')
             return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'}) 
-        #try:
-        return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
-        #except Exception as e:
-        return render(request, 'seer/index.html', {'errormessage': 'It\'s possible we\'re under heavy load, or our servers aren\'t functioning as they should.\n\nPlease try again!  '})
+        try:
+            return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
+        except Exception as e:
+            return render(request, 'seer/index.html', {'errormessage': 'It\'s possible we\'re under heavy load, or our servers aren\'t functioning as they should.\n\nPlease try again!  '})
     else:
         start = int(request.GET.get('start', 0))
         c = request.GET.get('choice')
@@ -129,11 +156,11 @@ def pre_query(request):
         else:
             try:
                 return query(request, q, c, start, industry, gte, lte, vague_gte, vague_lte, sortby, tracktech, selfreg, regagree, crawldates)
-            except Exception as e:
-                return render(request, 'seer/index.html', {'errormessage': 'Unexpected error. Please try again '+str(e)})
+            except:
+                return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'})
 
 def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lte, sortby, tracktech, selfreg, regagree, crawldates):
-    print(crawldates)
+
     size=10
     body = {}
     body['from'] = start
@@ -237,8 +264,7 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
         body['highlight']['fields'] = {}
         body['highlight']['fields']['text'] = {}
 
-    results = es.search(index='privaseer_linkedin_2023', body=body)
-    print(body)
+    results = es.search(index='privaseer_linkedin_2023_html', body=body)
     #print(results)
 
     count_body = {}
@@ -255,32 +281,31 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
         count_body['query']['bool']['must'][0]['query_string']['default_field'] = 'url'
     #count_body['query']['bool']['must'][0]['multi_match']['operator'] = 'and'
     
-    count_body['query']['bool']['filter'] = filter_lst
+    # count_body['query']['bool']['filter'] = filter_lst
 
-    count_body['query']['bool']['filter'][0] = {}
-    count_body['query']['bool']['filter'][0]['range'] = {}
-    count_body['query']['bool']['filter'][0]['range']['readability'] = {}
-    count_body['query']['bool']['filter'][0]['range']['readability']['gte'] = gte
-    count_body['query']['bool']['filter'][0]['range']['readability']['lte'] = lte
+    # count_body['query']['bool']['filter'][0] = {}
+    # count_body['query']['bool']['filter'][0]['range'] = {}
+    # count_body['query']['bool']['filter'][0]['range']['readability'] = {}
+    # count_body['query']['bool']['filter'][0]['range']['readability']['gte'] = gte
+    # count_body['query']['bool']['filter'][0]['range']['readability']['lte'] = lte
+    # count_body['query']['bool']['filter'][1] = {}
+    # count_body['query']['bool']['filter'][1]['range'] = {}
+    # count_body['query']['bool']['filter'][1]['range']['vagueness'] = {}
+    # count_body['query']['bool']['filter'][1]['range']['vagueness']['gte'] = vague_gte
+    # count_body['query']['bool']['filter'][1]['range']['vagueness']['lte'] = vague_lte 
 
-    count_body['query']['bool']['filter'][1] = {}
-    count_body['query']['bool']['filter'][1]['range'] = {}
-    count_body['query']['bool']['filter'][1]['range']['vagueness'] = {}
-    count_body['query']['bool']['filter'][1]['range']['vagueness']['gte'] = vague_gte
-    count_body['query']['bool']['filter'][1]['range']['vagueness']['lte'] = vague_lte 
+    # for filterfield in filterfields: 
+    #     if filterfield[0] != []:
+    #         index = filter_dict[filterfield[1]]
+    #         count_body['query']['bool']['filter'][index] = {}
+    #         count_body['query']['bool']['filter'][index]['terms'] = {}
+    #         count_body['query']['bool']['filter'][index]['terms'][filterfield[2]] = filterfield[0]
 
-    for filterfield in filterfields: 
-        if filterfield[0] != []:
-            index = filter_dict[filterfield[1]]
-            count_body['query']['bool']['filter'][index] = {}
-            count_body['query']['bool']['filter'][index]['terms'] = {}
-            count_body['query']['bool']['filter'][index]['terms'][filterfield[2]] = filterfield[0]
-
-    if industry != []:
-        index = filter_dict['industry']
-        count_body['query']['bool']['filter'][index] = {}
-        count_body['query']['bool']['filter'][index]['terms'] = {}
-        count_body['query']['bool']['filter'][index]['terms']['industry'] = industry_list 
+    # if industry != []:
+    #     index = filter_dict['industry']
+    #     count_body['query']['bool']['filter'][index] = {}
+    #     count_body['query']['bool']['filter'][index]['terms'] = {}
+    #     count_body['query']['bool']['filter'][index]['terms']['industry'] = industry_list 
 
     industry_body = {}
     industry_body['query'] = {}
@@ -316,19 +341,21 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
             industry_body['query']['bool']['filter'][index]['terms'] = {}
             industry_body['query']['bool']['filter'][index]['terms'][filterfield[2]] = filterfield[0]
 
-    industry_hierarchy = get_industry_bucket(industry_body['query'], hierarchy)
-    results = es.search(index='privaseer_linkedin_2023', body=body)
-    #print(results)
-    #results = []
-    count = es.count(index='privaseer_linkedin_2023', body=count_body)
-    print("count "+str(count))
-    #exit()
+
+
+    results = es.search(index='privaseer_linkedin_2023_html', body=body)
+    count = es.count(index='privaseer_linkedin_2023_html', body=count_body)
+    industry_hierarchy = get_industry_bucket(industry_body['query'], hierarchy, count['count'])
+
+    #print("count "+str(count))
+    #print(count)
     if not results.get('hits'):
         return render('seer/error.html',{'errormessage':'Your query returned zero results, please try another query'})
     else:
         totalresultsNumFound= count["count"]
         #hlresults=r.json()['highlighting']
         results=results['hits']['hits']
+        #print(len(results))
         industry_hierarchy_list = []
         for item in industry_hierarchy:
             item['key'] = item['key'].capitalize()
@@ -338,17 +365,23 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
         #print(res['hits']['hits'])
         SearchResults=[] 
         if len(results) > 0:
-            for result in results:
+            #print(results[0])
+            for _i, result in enumerate(results):
+                if _i == 0:
+                    continue
                 resultid= result['_id']
                 f = models.SearchResult(resultid) #calling the object class that is defined inside models.py
+                if 'text' not in result['_source']:
+                    continue
 
                 f.content= result['_source']['text']
-                    
-                    
+                
                     # rawpath= result['_source']['file']['url']
                     
                     #removing local folder path
-                f.url= result['_source']['url']
+                f.url = result['_source']['url']
+                f.hash_value = result['_source']['hash']
+                f.html_location = result['_source']['html_location']
                 f.title = result['_source']['title']
                 f.date = result['_source']['display_date']
                 #f.description = str(result['_source']['meta']['raw']['description'])
@@ -369,13 +402,17 @@ def query(request, query, choice, start, industry, gte, lte, vague_gte, vague_lt
                 #trying to use the location field to get the file name to display the image
                 #f.filename= str(imageid)+'.png'
                 SearchResults.append(f)
-                
+
+            #p = Paginator(len(SearchResults), 10)
+            #page = request.GET.get('page')
+            #presults = p.get_page(page)
+            #print(start)
             return render(request, 'seer/htmlresult.html', {'results':SearchResults ,'industry_buckets': industry_hierarchy_list,'q': query,\
-                       'total':totalresultsNumFound, 'i':str(start+1) , 'j':str(len(results)+start), 'choice': choice, 'prev':int(start)})
+                       'total':totalresultsNumFound, 'i':str(start+1) , 'j':str(len(results)+start), 'choice': choice, 'prev':int(start), 'searchid': resultid})
         else:
             return render(request, 'seer/error.html',{'errormessage':'Your search returned zero results, please try another query', 'q': query, 'choice':choice})
 
-def get_industry_bucket(query_body, hierarchy):
+def get_industry_bucket(query_body, hierarchy, count):
     industry_tld_dict = map_industry_toplevel()
     all_buckets = get_all_buckets(industry_tld_dict)
     body = {
@@ -390,9 +427,9 @@ def get_industry_bucket(query_body, hierarchy):
             }
         }
     }
-    response = es.search(index='privaseer_linkedin_2023', body=body)
+    response = es.search(index='privaseer_linkedin_2023_html', body=body)
     industry_buckets = response['aggregations']['industry']['buckets']
-    industry_hierarchy = build_industry_hierarchy(industry_buckets, hierarchy, all_buckets, industry_tld_dict)
+    industry_hierarchy = build_industry_hierarchy(industry_buckets, hierarchy, all_buckets, industry_tld_dict, count)
     return industry_hierarchy
 
 def get_all_buckets(industry_tld_dict):
@@ -407,7 +444,7 @@ def get_all_buckets(industry_tld_dict):
             }
         }
     }
-    response = es.search(index='privaseer_linkedin_2023', body=body)
+    response = es.search(index='privaseer_linkedin_2023_html', body=body)
     all_buckets = response['aggregations']['industry']['buckets']
     all_buckets_dict = {}
     for item in all_buckets:
@@ -418,7 +455,7 @@ def get_all_buckets(industry_tld_dict):
         output[tld] = output.get(tld, 0) + all_buckets_dict[item['key']]    
     return output
 
-def build_industry_hierarchy(industry_buckets, hierarchy_dict, all_buckets_dict, industry_tld_dict):
+def build_industry_hierarchy(industry_buckets, hierarchy_dict, all_buckets_dict, industry_tld_dict, totalresultsNumFound):
     result = []
     result_dict = {}
     industry_buckets_dict = {}
@@ -428,13 +465,12 @@ def build_industry_hierarchy(industry_buckets, hierarchy_dict, all_buckets_dict,
         tld = industry_tld_dict[item['key']]
         if tld not in result_dict: 
             count = item['doc_count']
-            result_dict[tld] = {'count': count, 'sub': [{'key': item['key'], 'count': item['doc_count']}], 
-              'percentage': 0 if all_buckets_dict[tld] == 0 else round((count/all_buckets_dict[tld])*100, 2)}
+            result_dict[tld] = {'count': count, 'sub': [{'key': item['key'], 'count': item['doc_count']}], 'percentage': 0 if all_buckets_dict[tld] == 0 else round((count/totalresultsNumFound)*100, 2)}
         else:
             count = result_dict[tld]['count'] + item['doc_count']
             result_dict[tld]['count'] = count
             result_dict[tld]['sub'].append({'key': item['key'], 'count': item['doc_count']})
-            result_dict[tld]['percentage'] = 0 if all_buckets_dict[tld] == 0 else round((count/all_buckets_dict[tld])*100, 2)
+            result_dict[tld]['percentage'] = 0 if all_buckets_dict[tld] == 0 else round((count/totalresultsNumFound)*100, 2)
 
     for tld in sorted(result_dict, key=lambda x: result_dict[x]['percentage'], reverse=True):
         result.append({'key': tld, 'count': result_dict[tld]['count'], 'sub': result_dict[tld]['sub'], 'percentage': result_dict[tld]['percentage']})    
