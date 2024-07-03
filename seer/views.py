@@ -98,10 +98,10 @@ def pre_query(request):
         start = 0
         if not q or q.strip() == '':
             return render(request, 'seer/index.html', {'errormessage': 'Please enter a query'}) 
-        try:
-            return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
-        except Exception as e:
-            return render(request, 'seer/index.html', {'errormessage': 'It\'s possible we\'re under heavy load, or our servers aren\'t functioning as they should.\n\nPlease try again!  '})
+        #try:
+        return query(request, q, c, start, industry, -10, 100, 0, 1, "customrank", tracktech, selfreg, regagree, crawldates)
+        #except Exception as e:
+        return render(request, 'seer/index.html', {'errormessage': 'It\'s possible we\'re under heavy load, or our servers aren\'t functioning as they should.\n\nPlease try again!  '})
     else:
         start = int(request.GET.get('start', 0))
         c = request.GET.get('choice')
